@@ -332,6 +332,7 @@ router.get('/debug', (req, res) => {
           </div>
           <p><a href="/admin/reset-db" class="btn btn-primary">Reset Database</a></p>
           <p><a href="/admin/setup-admin" class="btn btn-secondary">Try Setup</a></p>
+          <p><a href="/admin/create-admin-now" class="btn btn-success">Create Admin Now (Direct)</a></p>
         </div>
       `,
       title: 'Debug Info',
@@ -345,6 +346,93 @@ router.get('/debug', (req, res) => {
         </div>
       `,
       title: 'Debug Error',
+      admin: true
+    });
+  }
+});
+
+// TEMPORARY DIRECT ADMIN CREATION - Remove after setup
+// GET /admin/create-admin-now - Directly create admin user
+router.get('/create-admin-now', (req, res) => {
+  try {
+    // Check if users already exist
+    const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
+    
+    if (userCount.count > 0) {
+      return res.render('layout', {
+        body: `
+          <div class="container">
+            <div class="warning-message">
+              <h1>Users Already Exist</h1>
+              <p>There are already ${userCount.count} users in the database.</p>
+              <p><a href="/admin/reset-db" class="btn btn-primary">Reset Database First</a></p>
+            </div>
+          </div>
+        `,
+        title: 'Users Exist',
+        admin: true
+      });
+    }
+
+    // Create admin user directly
+    const adminEmail = 'alexander@globalguidegroup.com';
+    const adminPassword = 'SecurePass123!';
+    
+    // Check if email already exists
+    const existingUser = req.db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
+    
+    if (existingUser) {
+      return res.render('layout', {
+        body: `
+          <div class="container">
+            <div class="error-message">User with this email already exists</div>
+            <p><a href="/admin/login" class="btn btn-primary">Go to Login</a></p>
+          </div>
+        `,
+        title: 'User Exists',
+        admin: true
+      });
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const passwordHash = bcrypt.hashSync(adminPassword, saltRounds);
+    const now = new Date().toISOString();
+
+    // Insert new admin user
+    const insertUser = req.db.prepare(`
+      INSERT INTO users (email, password_hash, created_at)
+      VALUES (?, ?, ?)
+    `);
+
+    insertUser.run(adminEmail, passwordHash, now);
+
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="success-message">
+            <h1>✅ Admin User Created Successfully!</h1>
+            <p><strong>Email:</strong> ${adminEmail}</p>
+            <p><strong>Password:</strong> ${adminPassword}</p>
+            <p><strong>⚠️ Important:</strong> Please change the password after first login!</p>
+          </div>
+          <p><a href="/admin/login" class="btn btn-primary">Go to Login</a></p>
+        </div>
+      `,
+      title: 'Setup Complete',
+      admin: true
+    });
+
+  } catch (error) {
+    console.error('Direct admin creation error:', error);
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Error creating admin user: ${error.message}</div>
+          <p><a href="/admin/debug" class="btn btn-secondary">Back to Debug</a></p>
+        </div>
+      `,
+      title: 'Setup Error',
       admin: true
     });
   }

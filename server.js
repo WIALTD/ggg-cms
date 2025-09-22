@@ -99,6 +99,33 @@ app.get('/check-users', (req, res) => {
   }
 });
 
+// COMPREHENSIVE DEBUG ROUTE
+app.get('/debug-all', (req, res) => {
+  try {
+    const users = db.prepare('SELECT id, email, created_at FROM users').all();
+    const sessionInfo = {
+      sessionId: req.sessionID,
+      userId: req.session.userId,
+      userEmail: req.session.userEmail,
+      sessionData: req.session
+    };
+    
+    res.json({
+      users: users,
+      session: sessionInfo,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        isProduction: isProduction,
+        sessionSecret: process.env.SESSION_SECRET ? 'SET' : 'NOT SET'
+      },
+      cookies: req.headers.cookie,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.json({ error: error.message, stack: error.stack });
+  }
+});
+
 // EMERGENCY ADMIN CREATION - Direct route in server.js
 app.get('/create-admin-emergency', async (req, res) => {
   try {

@@ -7,6 +7,7 @@ import { marked } from 'marked';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import rateLimit from 'express-rate-limit';
 import { requireAuth, redirectIfAuthenticated } from '../middleware/auth.js';
 
@@ -28,6 +29,12 @@ const __dirname = path.dirname(__filename);
 // Use local path for both development and production (free tier)
 // Note: Uploaded files will be reset on each deployment on free tier
 const uploadsPath = path.join(__dirname, '..', 'uploads');
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+  console.log('Created uploads directory:', uploadsPath);
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -769,25 +776,39 @@ router.post('/posts/:id/delete', (req, res) => {
 // GET /admin/upload - Show upload form
 // router.get('/upload', requireAuth, (req, res) => {
 router.get('/upload', (req, res) => {
+  // Debug: Check if uploads directory exists
+  const uploadsExists = fs.existsSync(uploadsPath);
+  console.log('Uploads directory path:', uploadsPath);
+  console.log('Uploads directory exists:', uploadsExists);
+  
   renderWithLayout(res, 'admin/upload', { 
     title: 'Upload Image',
     message: null,
-    fileUrl: null
+    fileUrl: null,
+    debug: {
+      uploadsPath: uploadsPath,
+      uploadsExists: uploadsExists
+    }
   });
 });
 
 // POST /admin/upload - Handle file upload
 // router.post('/upload', requireAuth, upload.single('image'), (req, res) => {
 router.post('/upload', upload.single('image'), (req, res) => {
+  console.log('Upload attempt:', req.body); // Debug log
+  console.log('Upload file:', req.file); // Debug log
+  
   try {
     if (!req.file) {
+      console.log('No file received'); // Debug log
       return renderWithLayout(res, 'admin/upload', { 
         title: 'Upload Image',
-        message: 'No file selected',
+        message: 'No file selected or file upload failed',
         fileUrl: null
       });
     }
 
+    console.log('File uploaded successfully:', req.file.filename); // Debug log
     const fileUrl = `/uploads/${req.file.filename}`;
     
     renderWithLayout(res, 'admin/upload', { 

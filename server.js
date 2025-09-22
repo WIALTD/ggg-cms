@@ -145,8 +145,8 @@ app.get('/create-admin-emergency', async (req, res) => {
   }
 });
 
-// EMERGENCY LOGIN TEST - Direct route in server.js
-app.get('/test-login-emergency', async (req, res) => {
+// EMERGENCY LOGIN - Direct login without form
+app.get('/login-emergency', async (req, res) => {
   try {
     const email = 'alexander@globalguidegroup.com';
     const password = 'SecurePass123!';
@@ -178,18 +178,14 @@ app.get('/test-login-emergency', async (req, res) => {
     req.session.userId = user.id;
     req.session.userEmail = user.email;
 
-    res.send(`
-      <h1>✅ Login Test Successful!</h1>
-      <p>User: ${user.email}</p>
-      <p>Session ID: ${req.session.userId}</p>
-      <p><a href="/admin/dashboard">Go to Dashboard</a></p>
-    `);
+    // Redirect to dashboard
+    res.redirect('/admin/dashboard');
 
   } catch (error) {
-    console.error('Login test error:', error);
+    console.error('Emergency login error:', error);
     res.send(`
       <h1>❌ Error</h1>
-      <p>Login test error: ${error.message}</p>
+      <p>Login error: ${error.message}</p>
     `);
   }
 });

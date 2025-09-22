@@ -314,6 +314,42 @@ router.get('/reset-db', (req, res) => {
   }
 });
 
+// TEMPORARY DIAGNOSTIC ROUTE - Remove after setup
+// GET /admin/debug - Check database status
+router.get('/debug', (req, res) => {
+  try {
+    const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
+    const postCount = req.db.prepare('SELECT COUNT(*) as count FROM posts').get();
+    
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <h1>🔍 Database Debug Info</h1>
+          <div class="info-box">
+            <p><strong>Users in database:</strong> ${userCount.count}</p>
+            <p><strong>Posts in database:</strong> ${postCount.count}</p>
+            <p><strong>Setup route should work:</strong> ${userCount.count === 0 ? 'YES' : 'NO'}</p>
+          </div>
+          <p><a href="/admin/reset-db" class="btn btn-primary">Reset Database</a></p>
+          <p><a href="/admin/setup-admin" class="btn btn-secondary">Try Setup</a></p>
+        </div>
+      `,
+      title: 'Debug Info',
+      admin: true
+    });
+  } catch (error) {
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Database error: ${error.message}</div>
+        </div>
+      `,
+      title: 'Debug Error',
+      admin: true
+    });
+  }
+});
+
 // GET /admin/dashboard - Protected admin dashboard
 router.get('/dashboard', requireAuth, (req, res) => {
   const { success } = req.query;

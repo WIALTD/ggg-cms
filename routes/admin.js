@@ -161,7 +161,7 @@ router.get('/setup-admin', (req, res) => {
           <h1>🔧 Initial Setup</h1>
           <p>Create your first admin user account.</p>
           
-          <form method="POST" action="/setup-admin" class="user-form">
+          <form method="POST" action="/admin/setup-admin" class="user-form">
             <div class="form-group">
               <label for="email">Email Address *</label>
               <input type="email" id="email" name="email" value="alexander@globalguidegroup.com" required>

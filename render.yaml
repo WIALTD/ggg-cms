@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ggg-cms
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: BASE_URL
+        value: https://next.globalguidegroup.com
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1

@@ -1,0 +1,102 @@
+<div class="container">
+    <div class="admin-header">
+        <h1>Upload Image</h1>
+        <a href="/admin/posts" class="btn btn-secondary">← Back to Posts</a>
+    </div>
+
+    <div class="upload-form-container">
+        <% if (typeof message !== 'undefined' && message) { %>
+            <div class="<%= message.includes('successfully') ? 'success-message' : 'error-message' %>">
+                <%= message %>
+            </div>
+        <% } %>
+
+        <form method="POST" action="/admin/upload" enctype="multipart/form-data" class="upload-form">
+            <div class="form-group">
+                <label for="image">Select Image File</label>
+                <input 
+                    type="file" 
+                    id="image" 
+                    name="image" 
+                    accept="image/*"
+                    required
+                >
+                <small class="form-help">
+                    Supported formats: JPG, JPEG, PNG, GIF, WebP. Maximum size: 5MB.
+                </small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Upload Image</button>
+                <a href="/admin/posts" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+        <% if (typeof fileUrl !== 'undefined' && fileUrl) { %>
+            <div class="upload-result">
+                <h3>Upload Successful!</h3>
+                <div class="file-info">
+                    <p><strong>File:</strong> <%= typeof fileName !== 'undefined' ? fileName : 'Unknown' %></p>
+                    <p><strong>URL:</strong></p>
+                    <div class="url-container">
+                        <input 
+                            type="text" 
+                            value="<%= fileUrl %>" 
+                            readonly 
+                            class="url-input"
+                            onclick="this.select()"
+                        >
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="copyToClipboard('<%= fileUrl %>')">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="markdown-help">
+                    <h4>Markdown Usage</h4>
+                    <p>Use this URL in your Markdown content:</p>
+                    <div class="markdown-example">
+                        <code>![Alt text](<%= fileUrl %>)</code>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="copyToClipboard('![Alt text](<%= fileUrl %>)')">
+                            Copy Markdown
+                        </button>
+                    </div>
+                </div>
+
+                <div class="image-preview">
+                    <h4>Preview</h4>
+                    <img src="<%= fileUrl %>" alt="Uploaded image" class="preview-image">
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="admin-footer">
+        <a href="/admin/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show a brief success message
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.backgroundColor = '#28a745';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.backgroundColor = '';
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+    });
+}
+</script>

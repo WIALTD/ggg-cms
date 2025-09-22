@@ -1,0 +1,42 @@
+<div class="container">
+    <div class="login-form">
+        <h1>Admin Login</h1>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-message">
+                <%= error %>
+            </div>
+        <% } %>
+        
+        <form method="POST" action="/admin/login">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    value="<%= typeof email !== 'undefined' ? email : '' %>"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required
+                >
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        
+        <div class="login-info">
+            <p class="muted">Default credentials:</p>
+            <p class="muted">Email: admin@example.com</p>
+            <p class="muted">Password: admin123</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,190 @@
+# GGG CMS - Hybrid Content Management System
+
+## Project Overview
+A simple hybrid CMS built with Node.js + Express + SQLite that serves both HTML pages and JSON API endpoints.
+
+## Tech Stack
+- **Backend**: Node.js, Express.js
+- **Database**: SQLite with better-sqlite3
+- **Templates**: EJS
+- **Styling**: Custom CSS with system fonts
+- **Authentication**: Express-session with bcrypt
+- **Markdown**: Marked library for markdown processing
+
+## Project Structure
+```
+ggg-cms/
+├── server.js              # Main Express server (118 lines)
+├── db.js                  # Database initialization and seeding
+├── middleware/
+│   └── auth.js            # Authentication middleware
+├── routes/
+│   ├── public.js          # Public routes (/, /destinations/:slug)
+│   ├── admin.js           # Admin routes (/admin/*)
+│   ├── api.js             # API routes (/api/*)
+│   └── seo.js             # SEO routes (/sitemap.xml, /robots.txt)
+├── utils/
+│   └── seo.js             # SEO utilities
+├── views/
+│   ├── layout.ejs         # Main layout template
+│   ├── index.ejs          # Home page (posts list)
+│   ├── post.ejs           # Single post view
+│   └── admin/
+│       ├── login.ejs      # Admin login form
+│       ├── dashboard.ejs  # Admin dashboard
+│       ├── posts.ejs      # Admin posts list
+│       ├── post_form.ejs  # Admin post create/edit form
+│       └── upload.ejs     # Admin file upload
+├── public/
+│   ├── css/
+│   │   ├── base.css       # Resets, typography, colors (113 lines)
+│   │   ├── layout.css     # Header, footer, nav, container (105 lines)
+│   │   ├── prose.css      # Article/post-specific styling (112 lines)
+│   │   └── admin.css      # Admin dashboard, forms, tables (535 lines)
+│   └── images/
+│       └── default-og.jpg # Default Open Graph image
+├── uploads/               # User uploaded files
+└── content.sqlite         # SQLite database (gitignored)
+```
+
+## Database Schema
+
+### Posts Table
+- `id` (INTEGER PRIMARY KEY)
+- `title` (TEXT NOT NULL)
+- `slug` (TEXT UNIQUE NOT NULL)
+- `body_md` (TEXT NOT NULL) - Markdown content
+- `body_html` (TEXT NOT NULL) - Rendered HTML
+- `status` (TEXT DEFAULT 'draft') - 'draft' or 'published'
+- `featured_image` (TEXT) - URL for social sharing
+- `published_at` (DATETIME)
+- `updated_at` (DATETIME DEFAULT CURRENT_TIMESTAMP)
+
+### Users Table
+- `id` (INTEGER PRIMARY KEY)
+- `email` (TEXT UNIQUE NOT NULL)
+- `password_hash` (TEXT NOT NULL)
+- `created_at` (DATETIME DEFAULT CURRENT_TIMESTAMP)
+
+### Pages Table
+- `id` (INTEGER PRIMARY KEY)
+- `title` (TEXT NOT NULL)
+- `slug` (TEXT UNIQUE NOT NULL)
+- `body_md` (TEXT NOT NULL)
+- `body_html` (TEXT NOT NULL)
+- `status` (TEXT DEFAULT 'draft')
+- `published_at` (DATETIME)
+- `updated_at` (DATETIME DEFAULT CURRENT_TIMESTAMP)
+
+## Routes
+
+### Public Routes
+- `GET /` - Home page (list published posts)
+- `GET /destinations/:slug` - Single post page
+- `GET /api/posts` - All published posts (JSON)
+- `GET /api/posts/:slug` - Single post (JSON)
+- `GET /sitemap.xml` - Dynamic sitemap
+- `GET /robots.txt` - Robots.txt
+- `GET /health` - Health check endpoint
+
+### Admin Routes
+- `GET /admin/login` - Admin login form
+- `POST /admin/login` - Process login (rate limited)
+- `POST /admin/logout` - Logout
+- `GET /admin/dashboard` - Admin dashboard (protected)
+- `GET /admin/posts` - List all posts (protected)
+- `GET /admin/posts/new` - Create new post form (protected)
+- `POST /admin/posts` - Create new post (protected)
+- `GET /admin/posts/:id/edit` - Edit post form (protected)
+- `POST /admin/posts/:id` - Update post (protected)
+- `POST /admin/posts/:id/delete` - Delete post (protected)
+- `GET /admin/upload` - Upload form (protected)
+- `POST /admin/upload` - Handle file upload (protected)
+
+## Authentication
+- Uses express-session for session management
+- Passwords hashed with bcrypt
+- Default admin: admin@example.com / admin123
+- All /admin/* routes require authentication
+
+## Features Implemented
+- ✅ Basic CMS with posts and pages
+- ✅ Markdown to HTML conversion
+- ✅ JSON API endpoints
+- ✅ Admin authentication system
+- ✅ Admin CRUD for posts
+- ✅ File upload with image validation
+- ✅ SEO optimization (meta tags, sitemap, robots.txt)
+- ✅ Social sharing (Open Graph, Twitter Cards)
+- ✅ Responsive design
+- ✅ Session management
+- ✅ Security features (rate limiting, helmet, input validation)
+- ✅ Modular CSS architecture
+- ✅ Route organization
+
+## Development Commands
+- `npm run dev` - Start development server
+- Server runs on http://localhost:3000
+
+## Security Notes
+- Session secret should be changed in production
+- Use HTTPS in production
+- Consider rate limiting for production
+- Validate and sanitize all user inputs
+## Cursor Rules
+
+# Code Style
+- Use ES Modules (import/export).
+- Keep code minimal and human-readable, no unnecessary abstractions.
+- Prefer clarity over cleverness.
+
+# Frontend
+- Use plain HTML5 and handwritten CSS.
+- Do not use CSS frameworks (no Tailwind, Bootstrap).
+- Favor semantic tags (<header>, <main>, <article>, <section>, <footer>).
+
+# Admin Editing
+- Use Markdown textareas for content editing.
+- No WYSIWYG editors unless explicitly requested.
+- Internal links should be written as Markdown [label](/destinations/slug).
+- Inline images via Markdown ![alt text](/uploads/file.jpg).
+
+# SEO
+- Always include <title> and <meta name="description">.
+- Include Open Graph and Twitter Card tags in post views.
+- Support featured_image for social previews.
+- Provide /sitemap.xml and /robots.txt.
+- Include canonical <link> tags.
+
+# Database
+- Use SQLite with better-sqlite3.
+- Schema must remain simple, human-readable.
+- Store both body_md and body_html for posts.
+
+# Security
+- Use bcrypt for password hashing.
+- Use express-session for session management.
+- Protect all /admin routes with requireAuth middleware.
+- Sanitize file uploads.
+- Use helmet for HTTP security headers.
+- Implement rate limiting for login attempts.
+- Validate and sanitize all user inputs.
+
+# CSS Architecture
+- Split CSS into modular files: base.css, layout.css, prose.css, admin.css
+- Public pages load: base.css + layout.css
+- Post pages load: base.css + layout.css + prose.css
+- Admin pages load: base.css + layout.css + admin.css
+- Keep individual CSS files under 200 lines when possible.
+
+# Route Organization
+- Split routes into domain-specific files: public.js, admin.js, api.js, seo.js
+- Keep server.js lean (<120 lines)
+- Use Express Router for each route file
+- Pass database via middleware to route handlers
+
+# Deployment
+- App must run on Render, Railway, or VPS without modification.
+- Provide a /health route for uptime checks.
+- Use environment variables for configuration.
+- Implement production-safe error handling.

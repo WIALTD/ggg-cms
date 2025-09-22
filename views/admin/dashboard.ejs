@@ -1,0 +1,34 @@
+<div class="container">
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <h1>Welcome Admin</h1>
+            <p class="muted">Logged in as: <%= userEmail %></p>
+        </header>
+        
+        <div class="dashboard-content">
+            <div class="dashboard-section">
+                <h2>Quick Actions</h2>
+                <div class="action-buttons">
+                    <a href="/" class="btn btn-secondary">View Site</a>
+                    <a href="/api/posts" class="btn btn-secondary">View API</a>
+                </div>
+            </div>
+            
+            <div class="dashboard-section">
+                <h2>Content Management</h2>
+                <div class="action-buttons">
+                    <a href="/admin/posts" class="btn btn-primary">Manage Posts</a>
+                    <a href="/admin/posts/new" class="btn btn-primary">Create New Post</a>
+                    <a href="/admin/upload" class="btn btn-secondary">Upload Images</a>
+                </div>
+                <p class="muted">Create, edit, and manage your blog posts and content.</p>
+            </div>
+        </div>
+        
+        <footer class="dashboard-footer">
+            <form method="POST" action="/admin/logout" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </footer>
+    </div>
+</div>

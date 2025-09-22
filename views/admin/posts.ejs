@@ -1,0 +1,62 @@
+<div class="container">
+    <div class="admin-header">
+        <h1>Manage Posts</h1>
+        <a href="/admin/posts/new" class="btn btn-primary">Create New Post</a>
+    </div>
+
+    <% if (posts && posts.length > 0) { %>
+        <div class="posts-table-container">
+            <table class="posts-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% posts.forEach(post => { %>
+                        <tr>
+                            <td>
+                                <div class="post-title">
+                                    <strong><%= post.title %></strong>
+                                    <br>
+                                    <small class="muted">/<%= post.slug %></small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge status-<%= post.status %>">
+                                    <%= post.status %>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="muted">
+                                    <%= new Date(post.updated_at).toLocaleDateString() %>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/admin/posts/<%= post.id %>/edit" class="btn btn-sm btn-secondary">Edit</a>
+                                    <form method="POST" action="/admin/posts/<%= post.id %>/delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?')">
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    <% } else { %>
+        <div class="empty-state">
+            <h3>No posts yet</h3>
+            <p>Create your first post to get started.</p>
+            <a href="/admin/posts/new" class="btn btn-primary">Create New Post</a>
+        </div>
+    <% } %>
+
+    <div class="admin-footer">
+        <a href="/admin/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Global Guide Group</title>
+    
+    <!-- SEO meta tags -->
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Curated cultural travel guides from around the world.' %>">
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="<%= typeof title !== 'undefined' ? title : 'Global Guide Group' %>">
+    <meta property="og:description" content="<%= typeof description !== 'undefined' ? description : 'Curated cultural travel guides from around the world.' %>">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <% if (typeof admin !== 'undefined' && admin) { %>
+    <link rel="stylesheet" href="/css/admin.css">
+    <% } %>
+</head>
+<body>
+    <header>
+        <nav>
+            <h1><a href="/">GGG CMS</a></h1>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/api/posts">API</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <%- body %>
+    </main>
+    
+    <footer>
+        <p class="muted">© 2024 GGG CMS. Built with Node.js, Express, and SQLite.</p>
+    </footer>
+</body>
+</html>

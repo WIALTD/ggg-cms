@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= post.title %> - Global Guide Group</title>
+    
+    <!-- SEO meta tags -->
+    <meta name="description" content="<%= description %>">
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="<%= post.title %>">
+    <meta property="og:description" content="<%= description %>">
+    <meta property="og:url" content="<%= baseUrl + '/destinations/' + post.slug %>">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="<%= post.featured_image || baseUrl + '/images/default-og.jpg' %>">
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= post.title %>">
+    <meta name="twitter:description" content="<%= description %>">
+    <meta name="twitter:image" content="<%= post.featured_image || baseUrl + '/images/default-og.jpg' %>">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="<%= baseUrl + '/destinations/' + post.slug %>">
+    
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/prose.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1><a href="/">GGG CMS</a></h1>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/api/posts">API</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="container">
+            <article class="post">
+                <header>
+                    <h1><%= post.title %></h1>
+                    <p class="muted">
+                        Published: <%= new Date(post.published_at).toLocaleDateString() %>
+                        <% if (post.updated_at !== post.published_at) { %>
+                            | Updated: <%= new Date(post.updated_at).toLocaleDateString() %>
+                        <% } %>
+                    </p>
+                </header>
+                
+                <div class="post-content">
+                    <%- post.body_html %>
+                </div>
+                
+                <footer>
+                    <p><a href="/">← Back to all destinations</a></p>
+                </footer>
+            </article>
+        </div>
+    </main>
+    
+    <footer>
+        <p class="muted">© 2024 GGG CMS. Built with Node.js, Express, and SQLite.</p>
+    </footer>
+</body>
+</html>

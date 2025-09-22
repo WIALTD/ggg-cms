@@ -65,7 +65,6 @@ try {
 
 // Check if we need to seed data
 const postCount = db.prepare('SELECT COUNT(*) as count FROM posts').get();
-const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
 
 if (postCount.count === 0) {
   const florenceMarkdown = `# Florence Guide
@@ -120,20 +119,7 @@ The historic center is best explored on foot, allowing you to discover hidden pi
   console.log('Seeded database with Florence post');
 }
 
-if (userCount.count === 0) {
-  const adminPassword = 'admin123';
-  const saltRounds = 10;
-  const passwordHash = bcrypt.hashSync(adminPassword, saltRounds);
-  const now = new Date().toISOString();
-
-  const insertUser = db.prepare(`
-    INSERT INTO users (email, password_hash, created_at)
-    VALUES (?, ?, ?)
-  `);
-
-  insertUser.run('admin@example.com', passwordHash, now);
-
-  console.log('Seeded database with admin user (admin@example.com / admin123)');
-}
+// Users table is created but left empty by default
+// Admin users must be created explicitly via /admin/users/new
 
 export default db;

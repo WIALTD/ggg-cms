@@ -7,6 +7,13 @@
                 <%= error %>
             </div>
         <% } %>
+
+        <% if (typeof noUsers !== 'undefined' && noUsers) { %>
+            <div class="warning-message">
+                <strong>No admin users exist yet.</strong><br>
+                Please contact the site administrator to create one.
+            </div>
+        <% } %>
         
         <form method="POST" action="/admin/login">
             <div class="form-group">
@@ -34,9 +41,7 @@
         </form>
         
         <div class="login-info">
-            <p class="muted">Default credentials:</p>
-            <p class="muted">Email: admin@example.com</p>
-            <p class="muted">Password: admin123</p>
+            <p class="muted">Admin users must be created by an existing administrator.</p>
         </div>
     </div>
 </div>

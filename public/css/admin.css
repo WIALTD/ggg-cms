@@ -544,6 +544,17 @@
     font-weight: 500;
 }
 
+/* Warning Message */
+.warning-message {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-weight: 500;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .login-form, .post-form-container, .upload-form-container {

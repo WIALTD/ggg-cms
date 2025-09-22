@@ -69,7 +69,14 @@ const renderWithLayout = (res, template, data = {}) => {
 
 // GET /admin/login - Show login form
 router.get('/login', redirectIfAuthenticated, (req, res) => {
-  renderWithLayout(res, 'admin/login', { title: 'Admin Login' });
+  // Check if any users exist
+  const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
+  const noUsers = userCount.count === 0;
+  
+  renderWithLayout(res, 'admin/login', { 
+    title: 'Admin Login',
+    noUsers: noUsers
+  });
 });
 
 // POST /admin/login - Process login (with rate limiting)

@@ -18,6 +18,7 @@ const adminPassword = 'SecurePass123!';
 
 console.log('🔧 GGG CMS - Admin User Creation Script');
 console.log('=====================================');
+console.log('🚀 Ready for Render deployment!');
 
 try {
   // Connect to database

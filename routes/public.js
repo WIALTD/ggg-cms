@@ -41,7 +41,7 @@ router.get('/destinations/:slug', (req, res) => {
   }
 
   const description = generateDescription(post.body_md);
-  res.render('post', { post, baseUrl: req.protocol + '://' + req.get('host'), description });
+  res.render('post', { post, baseUrl: req.baseUrl, description });
 });
 
 export default router;

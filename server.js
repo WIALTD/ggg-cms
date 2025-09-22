@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
@@ -14,6 +15,7 @@ import seoRoutes from './routes/seo.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Get __dirname equivalent for ES modules
@@ -49,7 +51,8 @@ app.set('views', './views');
 app.use(express.static('public'));
 
 // Serve uploaded files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadsPath = isProduction ? '/data/uploads' : path.join(__dirname, 'uploads');
+app.use('/uploads', express.static(uploadsPath));
 
 // Parse JSON bodies
 app.use(express.json());
@@ -69,9 +72,10 @@ app.use(session({
   }
 }));
 
-// Middleware to add database to request object
+// Middleware to add database and BASE_URL to request object
 app.use((req, res, next) => {
   req.db = db;
+  req.baseUrl = BASE_URL;
   next();
 });
 

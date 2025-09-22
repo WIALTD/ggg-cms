@@ -1,8 +1,19 @@
+import 'dotenv/config';
 import Database from 'better-sqlite3';
 import { marked } from 'marked';
 import bcrypt from 'bcrypt';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const db = new Database('content.sqlite');
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Use persistent storage path in production, local path in development
+const isProduction = process.env.NODE_ENV === 'production';
+const dbPath = isProduction ? '/data/content.sqlite' : path.join(__dirname, 'content.sqlite');
+
+const db = new Database(dbPath);
 
 // Create posts table
 db.exec(`

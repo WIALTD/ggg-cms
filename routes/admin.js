@@ -22,10 +22,14 @@ const loginLimiter = rateLimit({
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Use persistent storage path in production, local path in development
+const isProduction = process.env.NODE_ENV === 'production';
+const uploadsPath = isProduction ? '/data/uploads' : path.join(__dirname, '..', 'uploads');
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'uploads'));
+    cb(null, uploadsPath);
   },
   filename: (req, file, cb) => {
     // Sanitize filename and add timestamp prefix

@@ -3,3 +3,4 @@ content.sqlite
 uploads/
 .env
 .DS_Store
+/data/

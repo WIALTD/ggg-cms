@@ -20,8 +20,7 @@ router.get('/sitemap.xml', (req, res) => {
       ORDER BY updated_at DESC
     `).all();
 
-    const baseUrl = req.protocol + '://' + req.get('host');
-    const sitemap = generateSitemap(posts, pages, baseUrl);
+    const sitemap = generateSitemap(posts, pages, req.baseUrl);
     
     res.set('Content-Type', 'application/xml');
     res.send(sitemap);
@@ -34,8 +33,7 @@ router.get('/sitemap.xml', (req, res) => {
 // GET /robots.txt - Generate robots.txt
 router.get('/robots.txt', (req, res) => {
   try {
-    const baseUrl = req.protocol + '://' + req.get('host');
-    const robotsTxt = generateRobotsTxt(baseUrl);
+    const robotsTxt = generateRobotsTxt(req.baseUrl);
     
     res.set('Content-Type', 'text/plain');
     res.send(robotsTxt);

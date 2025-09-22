@@ -135,6 +135,152 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// TEMPORARY SETUP ROUTE - Remove after first admin user is created
+// GET /admin/setup-admin - One-time setup to create first admin user
+router.get('/setup-admin', (req, res) => {
+  // Check if any users already exist
+  const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
+  
+  if (userCount.count > 0) {
+    return res.status(403).render('layout', {
+      body: `
+        <div class="container">
+          <h1>Setup Already Complete</h1>
+          <p>Admin users already exist. This setup route is no longer available.</p>
+          <p><a href="/admin/login">Go to Login</a></p>
+        </div>
+      `,
+      title: 'Setup Complete'
+    });
+  }
+
+  res.render('layout', {
+    body: `
+      <div class="container">
+        <div class="setup-form">
+          <h1>🔧 Initial Setup</h1>
+          <p>Create your first admin user account.</p>
+          
+          <form method="POST" action="/setup-admin" class="user-form">
+            <div class="form-group">
+              <label for="email">Email Address *</label>
+              <input type="email" id="email" name="email" value="alexander@globalguidegroup.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="password">Password *</label>
+              <input type="password" id="password" name="password" value="SecurePass123!" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Create Admin User</button>
+          </form>
+          
+          <div class="warning-message">
+            <strong>⚠️ Security Note:</strong> This route will be removed after setup. 
+            Please change the password after first login!
+          </div>
+        </div>
+      </div>
+    `,
+    title: 'Initial Setup',
+    admin: true
+  });
+});
+
+// POST /setup-admin - Process first admin user creation
+router.post('/setup-admin', async (req, res) => {
+  // Check if any users already exist
+  const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
+  
+  if (userCount.count > 0) {
+    return res.status(403).render('layout', {
+      body: `
+        <div class="container">
+          <h1>Setup Already Complete</h1>
+          <p>Admin users already exist. This setup route is no longer available.</p>
+          <p><a href="/admin/login">Go to Login</a></p>
+        </div>
+      `,
+      title: 'Setup Complete'
+    });
+  }
+
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Email and password are required</div>
+          <p><a href="/setup-admin">Try Again</a></p>
+        </div>
+      `,
+      title: 'Setup Error',
+      admin: true
+    });
+  }
+
+  try {
+    // Check if email already exists (shouldn't happen, but safety check)
+    const existingUser = req.db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    
+    if (existingUser) {
+      return res.render('layout', {
+        body: `
+          <div class="container">
+            <div class="error-message">User with this email already exists</div>
+            <p><a href="/admin/login">Go to Login</a></p>
+          </div>
+        `,
+        title: 'Setup Error',
+        admin: true
+      });
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const passwordHash = bcrypt.hashSync(password, saltRounds);
+    const now = new Date().toISOString();
+
+    // Insert new admin user
+    const insertUser = req.db.prepare(`
+      INSERT INTO users (email, password_hash, created_at)
+      VALUES (?, ?, ?)
+    `);
+
+    insertUser.run(email, passwordHash, now);
+
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="success-message">
+            <h1>✅ Admin User Created Successfully!</h1>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Password:</strong> ${password}</p>
+            <p><strong>⚠️ Important:</strong> Please change the password after first login!</p>
+          </div>
+          <p><a href="/admin/login" class="btn btn-primary">Go to Login</a></p>
+        </div>
+      `,
+      title: 'Setup Complete',
+      admin: true
+    });
+
+  } catch (error) {
+    console.error('Setup error:', error);
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Error creating admin user: ${error.message}</div>
+          <p><a href="/setup-admin">Try Again</a></p>
+        </div>
+      `,
+      title: 'Setup Error',
+      admin: true
+    });
+  }
+});
+
 // GET /admin/dashboard - Protected admin dashboard
 router.get('/dashboard', requireAuth, (req, res) => {
   const { success } = req.query;

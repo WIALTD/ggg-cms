@@ -555,6 +555,28 @@
     font-weight: 500;
 }
 
+/* Setup Form Styles */
+.setup-form {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 500px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.setup-form h1 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.setup-form p {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #666;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .login-form, .post-form-container, .upload-form-container {

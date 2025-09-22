@@ -83,9 +83,11 @@ router.get('/login', redirectIfAuthenticated, (req, res) => {
 
 // POST /admin/login - Process login (with rate limiting)
 router.post('/login', loginLimiter, async (req, res) => {
+  console.log('Login attempt:', req.body); // Debug log
   const { email, password } = req.body;
 
   if (!email || !password) {
+    console.log('Missing email or password'); // Debug log
     return renderWithLayout(res, 'admin/login', { 
       title: 'Admin Login',
       error: 'Email and password are required' 
@@ -509,6 +511,78 @@ router.get('/create-admin', (req, res) => {
   } catch (error) {
     console.error('Admin creation error:', error);
     res.redirect('/admin/login?message=error');
+  }
+});
+
+// SIMPLE LOGIN TEST - Test login without form
+// GET /admin/test-login-simple - Test login with hardcoded credentials
+router.get('/test-login-simple', async (req, res) => {
+  try {
+    const email = 'alexander@globalguidegroup.com';
+    const password = 'SecurePass123!';
+    
+    // Find user by email
+    const user = req.db.prepare('SELECT id, email, password_hash FROM users WHERE email = ?').get(email);
+    
+    if (!user) {
+      return res.render('layout', {
+        body: `
+          <div class="container">
+            <div class="error-message">User not found: ${email}</div>
+            <p><a href="/admin/create-admin" class="btn btn-primary">Create Admin User</a></p>
+          </div>
+        `,
+        title: 'Login Test - User Not Found',
+        admin: true
+      });
+    }
+
+    // Compare password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    
+    if (!isValidPassword) {
+      return res.render('layout', {
+        body: `
+          <div class="container">
+            <div class="error-message">Invalid password for: ${email}</div>
+            <p><a href="/admin/create-admin" class="btn btn-primary">Recreate Admin User</a></p>
+          </div>
+        `,
+        title: 'Login Test - Invalid Password',
+        admin: true
+      });
+    }
+
+    // Set session
+    req.session.userId = user.id;
+    req.session.userEmail = user.email;
+
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="success-message">
+            <h1>✅ Login Test Successful!</h1>
+            <p>User: ${user.email}</p>
+            <p>Session ID: ${req.session.userId}</p>
+          </div>
+          <p><a href="/admin/dashboard" class="btn btn-primary">Go to Dashboard</a></p>
+        </div>
+      `,
+      title: 'Login Test - Success',
+      admin: true
+    });
+
+  } catch (error) {
+    console.error('Login test error:', error);
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Login test error: ${error.message}</div>
+        </div>
+      `,
+      title: 'Login Test - Error',
+      admin: true
+    });
   }
 });
 

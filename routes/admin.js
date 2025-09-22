@@ -281,6 +281,39 @@ router.post('/setup-admin', async (req, res) => {
   }
 });
 
+// TEMPORARY RESET ROUTE - Remove after setup
+// GET /admin/reset-db - Reset database (REMOVE AFTER USE)
+router.get('/reset-db', (req, res) => {
+  try {
+    // Delete all users
+    req.db.prepare('DELETE FROM users').run();
+    
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="success-message">
+            <h1>✅ Database Reset Complete</h1>
+            <p>All users have been deleted. You can now use the setup route.</p>
+            <p><a href="/admin/setup-admin" class="btn btn-primary">Go to Setup</a></p>
+          </div>
+        </div>
+      `,
+      title: 'Database Reset',
+      admin: true
+    });
+  } catch (error) {
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Error resetting database: ${error.message}</div>
+        </div>
+      `,
+      title: 'Reset Error',
+      admin: true
+    });
+  }
+});
+
 // GET /admin/dashboard - Protected admin dashboard
 router.get('/dashboard', requireAuth, (req, res) => {
   const { success } = req.query;

@@ -81,8 +81,8 @@ router.get('/login', redirectIfAuthenticated, (req, res) => {
   });
 });
 
-// POST /admin/login - Process login (with rate limiting)
-router.post('/login', loginLimiter, async (req, res) => {
+// POST /admin/login - Process login (rate limiting temporarily disabled)
+router.post('/login', async (req, res) => {
   console.log('Login attempt:', req.body); // Debug log
   const { email, password } = req.body;
 

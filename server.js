@@ -85,6 +85,20 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, timestamp: new Date().toISOString() });
 });
 
+// Check users in database
+app.get('/check-users', (req, res) => {
+  try {
+    const users = db.prepare('SELECT email, created_at FROM users').all();
+    res.json({ 
+      userCount: users.length, 
+      users: users,
+      message: users.length > 0 ? 'Users exist' : 'No users found'
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
 // EMERGENCY ADMIN CREATION - Direct route in server.js
 app.get('/create-admin-emergency', async (req, res) => {
   try {

@@ -438,6 +438,43 @@ router.get('/create-admin-now', (req, res) => {
   }
 });
 
+// TEMPORARY LOGIN TEST - Remove after setup
+// GET /admin/test-login - Test login functionality
+router.get('/test-login', (req, res) => {
+  try {
+    const users = req.db.prepare('SELECT email, created_at FROM users').all();
+    
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <h1>🔍 Login Test</h1>
+          <div class="info-box">
+            <p><strong>Users in database:</strong> ${users.length}</p>
+            ${users.map(user => `
+              <p><strong>Email:</strong> ${user.email}</p>
+              <p><strong>Created:</strong> ${user.created_at}</p>
+            `).join('')}
+          </div>
+          <p><a href="/admin/login" class="btn btn-primary">Try Login</a></p>
+          <p><a href="/admin/debug" class="btn btn-secondary">Back to Debug</a></p>
+        </div>
+      `,
+      title: 'Login Test',
+      admin: true
+    });
+  } catch (error) {
+    res.render('layout', {
+      body: `
+        <div class="container">
+          <div class="error-message">Database error: ${error.message}</div>
+        </div>
+      `,
+      title: 'Test Error',
+      admin: true
+    });
+  }
+});
+
 // GET /admin/dashboard - Protected admin dashboard
 router.get('/dashboard', requireAuth, (req, res) => {
   const { success } = req.query;

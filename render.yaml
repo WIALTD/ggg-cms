@@ -13,7 +13,3 @@ services:
         generateValue: true
       - key: BASE_URL
         value: https://next.globalguidegroup.com
-    disk:
-      name: data
-      mountPath: /data
-      sizeGB: 1

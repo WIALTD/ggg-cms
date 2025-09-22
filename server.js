@@ -51,7 +51,8 @@ app.set('views', './views');
 app.use(express.static('public'));
 
 // Serve uploaded files from uploads directory
-const uploadsPath = isProduction ? '/data/uploads' : path.join(__dirname, 'uploads');
+// Note: Uploaded files will be reset on each deployment on free tier
+const uploadsPath = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadsPath));
 
 // Parse JSON bodies

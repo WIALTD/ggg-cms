@@ -9,9 +9,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Use persistent storage path in production, local path in development
-const isProduction = process.env.NODE_ENV === 'production';
-const dbPath = isProduction ? '/data/content.sqlite' : path.join(__dirname, 'content.sqlite');
+// Use local path for both development and production (free tier)
+// Note: Data will be reset on each deployment on free tier
+const dbPath = path.join(__dirname, 'content.sqlite');
 
 const db = new Database(dbPath);
 

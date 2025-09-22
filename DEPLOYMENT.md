@@ -30,16 +30,16 @@ PORT=3000
 4. **Start Command**: `npm start`
 5. **Health Check Path**: `/health`
 
-### Persistent Storage
+### Storage (Free Tier Limitations)
 
-1. In Render dashboard, go to your service settings
-2. Add a persistent volume:
-   - **Mount Path**: `/data`
-   - **Size**: 1GB (minimum)
+**Note**: The free tier on Render does not support persistent storage. This means:
+- Database and uploaded files will be reset on each deployment
+- This is fine for demo/testing purposes
+- For production with persistent data, upgrade to a paid plan
 
-This will store:
-- SQLite database (`/data/content.sqlite`)
-- Uploaded files (`/data/uploads/`)
+**Current Setup**:
+- SQLite database: `./content.sqlite` (local filesystem)
+- Uploaded files: `./uploads/` (local filesystem)
 
 ### Custom Domain
 

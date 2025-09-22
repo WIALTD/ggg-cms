@@ -143,7 +143,7 @@ ggg-cms/
 - Do not use CSS frameworks (no Tailwind, Bootstrap).
 - Favor semantic tags (<header>, <main>, <article>, <section>, <footer>).
 
-# Admin EditingRog
+# Admin Editing
 - Use Markdown textareas for content editing.
 - No WYSIWYG editors unless explicitly requested.
 - Internal links should be written as Markdown [label](/destinations/slug).

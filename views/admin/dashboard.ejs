@@ -4,6 +4,12 @@
             <h1>Welcome Admin</h1>
             <p class="muted">Logged in as: <%= userEmail %></p>
         </header>
+
+        <% if (typeof success !== 'undefined' && success === 'user_created') { %>
+            <div class="success-message">
+                ✅ User account created successfully!
+            </div>
+        <% } %>
         
         <div class="dashboard-content">
             <div class="dashboard-section">
@@ -22,6 +28,14 @@
                     <a href="/admin/upload" class="btn btn-secondary">Upload Images</a>
                 </div>
                 <p class="muted">Create, edit, and manage your blog posts and content.</p>
+            </div>
+
+            <div class="dashboard-section">
+                <h2>User Management</h2>
+                <div class="action-buttons">
+                    <a href="/admin/users/new" class="btn btn-primary">Create New User</a>
+                </div>
+                <p class="muted">Create new admin user accounts for additional team members.</p>
             </div>
         </div>
         

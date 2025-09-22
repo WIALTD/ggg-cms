@@ -130,9 +130,11 @@ router.post('/logout', (req, res) => {
 
 // GET /admin/dashboard - Protected admin dashboard
 router.get('/dashboard', requireAuth, (req, res) => {
+  const { success } = req.query;
   renderWithLayout(res, 'admin/dashboard', { 
     title: 'Admin Dashboard',
-    userEmail: req.session.userEmail 
+    userEmail: req.session.userEmail,
+    success: success
   });
 });
 
@@ -330,6 +332,90 @@ router.post('/upload', requireAuth, upload.single('image'), (req, res) => {
       title: 'Upload Image',
       message: error.message || 'Error uploading file',
       fileUrl: null
+    });
+  }
+});
+
+// User Management routes
+
+// GET /admin/users/new - Show create user form
+router.get('/users/new', requireAuth, (req, res) => {
+  renderWithLayout(res, 'admin/user_form', {
+    title: 'Create New User',
+    user: null,
+    action: 'create'
+  });
+});
+
+// POST /admin/users - Create new user
+router.post('/users', requireAuth, (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return renderWithLayout(res, 'admin/user_form', {
+      title: 'Create New User',
+      user: { email, password: '' },
+      action: 'create',
+      error: 'Email and password are required'
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return renderWithLayout(res, 'admin/user_form', {
+      title: 'Create New User',
+      user: { email, password: '' },
+      action: 'create',
+      error: 'Please enter a valid email address'
+    });
+  }
+
+  // Validate password length
+  if (password.length < 6) {
+    return renderWithLayout(res, 'admin/user_form', {
+      title: 'Create New User',
+      user: { email, password: '' },
+      action: 'create',
+      error: 'Password must be at least 6 characters long'
+    });
+  }
+
+  try {
+    // Check if email already exists
+    const existingUser = req.db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    
+    if (existingUser) {
+      return renderWithLayout(res, 'admin/user_form', {
+        title: 'Create New User',
+        user: { email, password: '' },
+        action: 'create',
+        error: 'A user with this email already exists'
+      });
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const passwordHash = bcrypt.hashSync(password, saltRounds);
+    const now = new Date().toISOString();
+
+    // Insert new user
+    const insertUser = req.db.prepare(`
+      INSERT INTO users (email, password_hash, created_at)
+      VALUES (?, ?, ?)
+    `);
+
+    insertUser.run(email, passwordHash, now);
+
+    // Redirect to dashboard with success message
+    res.redirect('/admin/dashboard?success=user_created');
+  } catch (error) {
+    console.error('Error creating user:', error);
+    renderWithLayout(res, 'admin/user_form', {
+      title: 'Create New User',
+      user: { email, password: '' },
+      action: 'create',
+      error: 'Error creating user. Please try again.'
     });
   }
 });

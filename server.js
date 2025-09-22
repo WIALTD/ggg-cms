@@ -85,6 +85,101 @@ app.get('/health', (req, res) => {
   res.json({ ok: true, timestamp: new Date().toISOString() });
 });
 
+// EMERGENCY ADMIN CREATION - Direct route in server.js
+app.get('/create-admin-emergency', async (req, res) => {
+  try {
+    // Check if users already exist
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+    
+    if (userCount.count > 0) {
+      return res.send(`
+        <h1>Admin Already Exists</h1>
+        <p>There are already ${userCount.count} users in the database.</p>
+        <p><a href="/admin/login">Go to Login</a></p>
+      `);
+    }
+
+    // Create admin user
+    const adminEmail = 'alexander@globalguidegroup.com';
+    const adminPassword = 'SecurePass123!';
+    
+    const bcrypt = (await import('bcrypt')).default;
+    const saltRounds = 10;
+    const passwordHash = bcrypt.hashSync(adminPassword, saltRounds);
+    const now = new Date().toISOString();
+
+    const insertUser = db.prepare(`
+      INSERT INTO users (email, password_hash, created_at)
+      VALUES (?, ?, ?)
+    `);
+
+    insertUser.run(adminEmail, passwordHash, now);
+
+    res.send(`
+      <h1>✅ Admin User Created!</h1>
+      <p><strong>Email:</strong> ${adminEmail}</p>
+      <p><strong>Password:</strong> ${adminPassword}</p>
+      <p><a href="/admin/login">Go to Login</a></p>
+    `);
+
+  } catch (error) {
+    console.error('Emergency admin creation error:', error);
+    res.send(`
+      <h1>❌ Error</h1>
+      <p>Error creating admin user: ${error.message}</p>
+    `);
+  }
+});
+
+// EMERGENCY LOGIN TEST - Direct route in server.js
+app.get('/test-login-emergency', async (req, res) => {
+  try {
+    const email = 'alexander@globalguidegroup.com';
+    const password = 'SecurePass123!';
+    
+    // Find user by email
+    const user = db.prepare('SELECT id, email, password_hash FROM users WHERE email = ?').get(email);
+    
+    if (!user) {
+      return res.send(`
+        <h1>❌ User Not Found</h1>
+        <p>User not found: ${email}</p>
+        <p><a href="/create-admin-emergency">Create Admin User</a></p>
+      `);
+    }
+
+    // Compare password
+    const bcrypt = (await import('bcrypt')).default;
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    
+    if (!isValidPassword) {
+      return res.send(`
+        <h1>❌ Invalid Password</h1>
+        <p>Invalid password for: ${email}</p>
+        <p><a href="/create-admin-emergency">Recreate Admin User</a></p>
+      `);
+    }
+
+    // Set session
+    req.session.userId = user.id;
+    req.session.userEmail = user.email;
+
+    res.send(`
+      <h1>✅ Login Test Successful!</h1>
+      <p>User: ${user.email}</p>
+      <p>Session ID: ${req.session.userId}</p>
+      <p><a href="/admin/dashboard">Go to Dashboard</a></p>
+    `);
+
+  } catch (error) {
+    console.error('Login test error:', error);
+    res.send(`
+      <h1>❌ Error</h1>
+      <p>Login test error: ${error.message}</p>
+    `);
+  }
+});
+
 // Mount route modules
 app.use('/', publicRoutes);
 app.use('/api', apiRoutes);

@@ -11,7 +11,29 @@
         <% if (typeof noUsers !== 'undefined' && noUsers) { %>
             <div class="warning-message">
                 <strong>No admin users exist yet.</strong><br>
-                Please contact the site administrator to create one.
+                <a href="/admin/create-admin" class="btn btn-primary">Create First Admin User</a>
+            </div>
+        <% } %>
+
+        <% if (typeof message !== 'undefined' && message === 'admin-created') { %>
+            <div class="success-message">
+                <strong>✅ Admin user created successfully!</strong><br>
+                Email: alexander@globalguidegroup.com<br>
+                Password: SecurePass123!
+            </div>
+        <% } %>
+
+        <% if (typeof message !== 'undefined' && message === 'users-exist') { %>
+            <div class="warning-message">
+                <strong>Admin users already exist.</strong><br>
+                Please use the login form below.
+            </div>
+        <% } %>
+
+        <% if (typeof message !== 'undefined' && message === 'error') { %>
+            <div class="error-message">
+                <strong>Error creating admin user.</strong><br>
+                Please try again or contact support.
             </div>
         <% } %>
         

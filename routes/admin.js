@@ -72,10 +72,12 @@ router.get('/login', redirectIfAuthenticated, (req, res) => {
   // Check if any users exist
   const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
   const noUsers = userCount.count === 0;
+  const { message } = req.query;
   
   renderWithLayout(res, 'admin/login', { 
     title: 'Admin Login',
-    noUsers: noUsers
+    noUsers: noUsers,
+    message: message
   });
 });
 
@@ -472,6 +474,41 @@ router.get('/test-login', (req, res) => {
       title: 'Test Error',
       admin: true
     });
+  }
+});
+
+// SIMPLE ADMIN CREATION - Just create and redirect
+// GET /create-admin - Simple one-click admin creation
+router.get('/create-admin', (req, res) => {
+  try {
+    // Check if users already exist
+    const userCount = req.db.prepare('SELECT COUNT(*) as count FROM users').get();
+    
+    if (userCount.count > 0) {
+      return res.redirect('/admin/login?message=users-exist');
+    }
+
+    // Create admin user
+    const adminEmail = 'alexander@globalguidegroup.com';
+    const adminPassword = 'SecurePass123!';
+    
+    const saltRounds = 10;
+    const passwordHash = bcrypt.hashSync(adminPassword, saltRounds);
+    const now = new Date().toISOString();
+
+    const insertUser = req.db.prepare(`
+      INSERT INTO users (email, password_hash, created_at)
+      VALUES (?, ?, ?)
+    `);
+
+    insertUser.run(adminEmail, passwordHash, now);
+
+    // Redirect to login with success message
+    res.redirect('/admin/login?message=admin-created');
+
+  } catch (error) {
+    console.error('Admin creation error:', error);
+    res.redirect('/admin/login?message=error');
   }
 });
 

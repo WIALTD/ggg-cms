@@ -20,7 +20,8 @@ router.get('/', (req, res) => {
     ORDER BY published_at DESC
   `).all();
 
-  renderWithLayout(res, 'index', { posts, title: 'Home' });
+  // Render the new homepage directly (it's a complete HTML document)
+  res.render('index', { posts });
 });
 
 // Single post page

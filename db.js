@@ -54,6 +54,22 @@ db.exec(`
   )
 `);
 
+// Create media table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS media (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    mime_type TEXT NOT NULL,
+    folder TEXT DEFAULT '',
+    thumbnail_path TEXT,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 // Check if we need to add featured_image column to existing posts table
 try {
   db.prepare('SELECT featured_image FROM posts LIMIT 1').get();

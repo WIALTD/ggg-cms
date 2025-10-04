@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
+import sharp from 'sharp';
 import { requireAuth, redirectIfAuthenticated } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -910,6 +911,182 @@ router.post('/users', (req, res) => {
       action: 'create',
       error: 'Error creating user. Please try again.'
     });
+  }
+});
+
+// Media Library routes
+
+// GET /admin/media - Media library interface
+// router.get('/media', requireAuth, (req, res) => {
+router.get('/media', (req, res) => {
+  const { folder } = req.query;
+  const currentFolder = folder || '';
+  
+  // Get all media files, optionally filtered by folder
+  let mediaQuery = 'SELECT * FROM media';
+  let params = [];
+  
+  if (currentFolder) {
+    mediaQuery += ' WHERE folder = ?';
+    params.push(currentFolder);
+  }
+  
+  mediaQuery += ' ORDER BY uploaded_at DESC';
+  
+  const media = req.db.prepare(mediaQuery).all(...params);
+  
+  // Get all unique folders
+  const folders = req.db.prepare('SELECT DISTINCT folder FROM media WHERE folder != "" ORDER BY folder').all();
+  
+  renderWithLayout(res, 'admin/media', {
+    title: 'Media Library',
+    media,
+    folders,
+    currentFolder
+  });
+});
+
+// POST /admin/media/upload - Handle drag-and-drop upload
+// router.post('/media/upload', requireAuth, upload.array('files', 10), async (req, res) => {
+router.post('/media/upload', upload.array('files', 10), async (req, res) => {
+  try {
+    const { folder = '' } = req.body;
+    const files = req.files;
+    
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No files uploaded' });
+    }
+    
+    const uploadedFiles = [];
+    
+    for (const file of files) {
+      // Generate thumbnail for images
+      let thumbnailPath = null;
+      if (file.mimetype.startsWith('image/')) {
+        const thumbnailFilename = `thumb_${file.filename}`;
+        const thumbnailFullPath = path.join(uploadsPath, thumbnailFilename);
+        
+        try {
+          await sharp(file.path)
+            .resize(300, 300, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: 80 })
+            .toFile(thumbnailFullPath);
+          
+          thumbnailPath = `/uploads/${thumbnailFilename}`;
+        } catch (sharpError) {
+          console.error('Thumbnail generation failed:', sharpError);
+        }
+      }
+      
+      // Store file info in database
+      const insertMedia = req.db.prepare(`
+        INSERT INTO media (filename, original_name, file_path, file_size, mime_type, folder, thumbnail_path, uploaded_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const now = new Date().toISOString();
+      insertMedia.run(
+        file.filename,
+        file.originalname,
+        `/uploads/${file.filename}`,
+        file.size,
+        file.mimetype,
+        folder,
+        thumbnailPath,
+        now
+      );
+      
+      uploadedFiles.push({
+        id: req.db.prepare('SELECT last_insert_rowid() as id').get().id,
+        filename: file.filename,
+        original_name: file.originalname,
+        file_path: `/uploads/${file.filename}`,
+        file_size: file.size,
+        mime_type: file.mimetype,
+        folder,
+        thumbnail_path: thumbnailPath,
+        uploaded_at: now
+      });
+    }
+    
+    res.json({ success: true, files: uploadedFiles });
+  } catch (error) {
+    console.error('Media upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// POST /admin/media/delete/:id - Delete media file
+// router.post('/media/delete/:id', requireAuth, (req, res) => {
+router.post('/media/delete/:id', (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    // Get file info before deleting
+    const mediaFile = req.db.prepare('SELECT * FROM media WHERE id = ?').get(id);
+    
+    if (!mediaFile) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    
+    // Delete physical files
+    const filePath = path.join(__dirname, '..', 'uploads', mediaFile.filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    if (mediaFile.thumbnail_path) {
+      const thumbnailFilename = path.basename(mediaFile.thumbnail_path);
+      const thumbnailPath = path.join(__dirname, '..', 'uploads', thumbnailFilename);
+      if (fs.existsSync(thumbnailPath)) {
+        fs.unlinkSync(thumbnailPath);
+      }
+    }
+    
+    // Delete from database
+    const deleteMedia = req.db.prepare('DELETE FROM media WHERE id = ?');
+    deleteMedia.run(id);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Media delete error:', error);
+    res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
+// POST /admin/media/folder - Create new folder
+// router.post('/media/folder', requireAuth, (req, res) => {
+router.post('/media/folder', (req, res) => {
+  const { folderName } = req.body;
+  
+  if (!folderName || folderName.trim() === '') {
+    return res.status(400).json({ error: 'Folder name is required' });
+  }
+  
+  // For now, folders are just metadata in the database
+  // Physical folder creation could be added if needed
+  res.json({ success: true, folderName: folderName.trim() });
+});
+
+// POST /admin/media/rename/:id - Rename media file
+// router.post('/media/rename/:id', requireAuth, (req, res) => {
+router.post('/media/rename/:id', (req, res) => {
+  const { id } = req.params;
+  const { newName } = req.body;
+  
+  if (!newName || newName.trim() === '') {
+    return res.status(400).json({ error: 'New name is required' });
+  }
+  
+  try {
+    const updateMedia = req.db.prepare('UPDATE media SET original_name = ?, updated_at = ? WHERE id = ?');
+    const now = new Date().toISOString();
+    updateMedia.run(newName.trim(), now, id);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Media rename error:', error);
+    res.status(500).json({ error: 'Rename failed' });
   }
 });
 
